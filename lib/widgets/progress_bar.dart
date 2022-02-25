@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:curve_design/borders.dart';
 import 'package:curve_design/colors.dart';
 import 'package:flutter/material.dart';
@@ -17,73 +19,135 @@ class ProgressBar extends StatelessWidget {
         color: color.withOpacity(.3),
         borderRadius: AppBorders.bigCorner,
       ),
-      child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: progress,
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: AppBorders.bigCorner,
-          ),
-          child: Center(
-            child: FittedBox(
-              child: Text(
-                '${(progress * 100).ceil()}%',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.whiteColor, fontWeight: FontWeight.bold),
+      child: TweenAnimationBuilder<double>(
+        builder: (context, value, child) {
+          return FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: value,
+            child: Container(
+              height: height,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: AppBorders.bigCorner,
+              ),
+              child: Center(
+                child: FittedBox(
+                  child: Text(
+                    '${(value * 100).ceil()}%',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.whiteColor, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
+        duration: Duration(seconds: 3),
+        tween: Tween(begin: 0.0, end: progress),
+        curve: Curves.easeOutExpo,
       ),
     );
   }
 }
 
-class CurvedProgressBar extends StatelessWidget {
-  const CurvedProgressBar({Key? key, required this.progress, this.height = 30.0, this.color = AppColors.primaryColor})
+class CurvedProgressBar extends StatefulWidget {
+  const CurvedProgressBar({Key? key, required this.progress, this.height = 28.0, this.color = AppColors.primaryColor})
       : super(key: key);
   final double progress;
   final double height;
   final Color color;
 
   @override
+  State<CurvedProgressBar> createState() => _CurvedProgressBarState();
+}
+
+class _CurvedProgressBarState extends State<CurvedProgressBar> {
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: CustomPaint(
-        painter: BendedPainter(color: AppColors.primaryColor.withOpacity(.3), progress: 1),
+    return SizedBox(
+      height: widget.height,
+      child: TweenAnimationBuilder<double>(
+        curve: Curves.easeOutExpo,
+        tween: Tween<double>(begin: 0.0, end: widget.progress),
+        builder: (context, value, child) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  foregroundPainter: BendedPainter(
+                      color: AppColors.primaryColor,
+                      progress: value,
+                      curvature: MediaQuery.of(context).size.width * .003),
+                  painter: BendedPainter(
+                      color: AppColors.primaryColor.withOpacity(.3),
+                      progress: 1,
+                      curvature: MediaQuery.of(context).size.width * .003),
+                ),
+              ),
+              Positioned(
+                left: 0.0,
+                right: 0.0,
+                child: Text(
+                  '${(value * 100).ceil()}%',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.whiteColor,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 }
 
 class BendedPainter extends CustomPainter {
-  final Color color;
-  final double progress;
+  BendedPainter(
+      {required this.progress,
+      this.textStyle,
+      this.color = Colors.blue,
+      this.curvature = 1.3,
+      this.strokeWidth = 30.0});
 
-  BendedPainter({this.color = AppColors.primaryColor, required this.progress});
+  final double progress;
+  final Color color;
+  final double curvature;
+  final TextStyle? textStyle;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 30
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final Path path = Path()
-      ..moveTo(0, size.height);
-      //..quadraticBezierTo(size.width / 2, 0, size.width, size.height);
-    path.arcToPoint(Offset(size.width, size.height,), radius: Radius.circular(500.0));
-    //path.arcTo(Rect.fromCenter(center: Offset(size.width / 2, size.height /2), width: size.width, height: size.height), 0, 3.14, false);
+    final startDegree = radians(210);
+    final endDegree = radians(120);
+
+    final Path path = Path();
+    path.arcTo(
+      Rect.fromCenter(center: Offset(w / 2, h), width: w, height: h * curvature),
+      startDegree,
+      endDegree * progress,
+      false,
+    );
+
+    canvas.drawPath(path, paint);
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
+double radians(num deg) => deg * (pi / 180.0);

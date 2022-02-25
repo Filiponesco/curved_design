@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.poppinsTextTheme(
         ThemeData.dark().textTheme,
       )),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: const MyHomePage(),
     );
   }
