@@ -4,7 +4,7 @@ Have fun with Stack, CustomClipper, Custom Painters, TweenAnimationBuilder, Twee
 
 | Original  | Reproduction |
 | ------------- | ------------- |
-| <img src="https://github.com/Filiponesco/curved_design/blob/master/docs/design.png" width="439" height="885"/>  | <img src="https://github.com/Filiponesco/curved_design/blob/master/docs/result_flow_2.gif" width="439" height="885"/>  |
+| <img src="https://github.com/Filiponesco/curved_design/blob/master/docs/design.png" width="439" height="885"/>  | <img src="https://github.com/Filiponesco/curved_design/blob/master/docs/result_flow_2.gif" width="445" height="885"/>  |
 
 # I have learned
 - How to use CustomClipper
